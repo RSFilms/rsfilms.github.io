@@ -1,657 +1,517 @@
-import React, { useMemo, useState } from "react";
-import {
-  Home, FileText, ShoppingBag, Users, Shield, Menu, X, LogIn, LogOut,
-  ArrowRight, Image as ImageIcon, Video, PlaySquare, Music2, Star, MessageSquare,
-  Search, Plus, Upload, Trash2, Calendar
-} from "lucide-react";
+<!DOCTYPE html>
+<html lang="en">
 
-// ------------------ Demo Data ------------------
-const CLIENTS = [
-  {
-    id: "c1",
-    name: "RS Films Group",
-    projects: 6,
-    socials: { youtube: "https://www.youtube.com/@RSFilmsBhojpuri" },
-    payments: [
-      { id: "p1", type: "YouTube", month: "Jul 2025", amount: 42000, status: "Paid" },
-      { id: "p2", type: "OTT", month: "Aug 2025", amount: 12000, status: "Pending" },
-    ],
-    files: {
-      raw: ["rs_shoot_01.zip"], psd: ["rs_poster_v3.psd"], edited: ["rs_song_edit_v2.prproj"], final: ["rs_release_master.mp4"],
-    },
-    releases: [{ id: "r1", title: "Radha Pallu Se", date: "2025-08-12" }],
-  },
-  {
-    id: "c2",
-    name: "Siddhi Vinayak Films",
-    projects: 4,
-    socials: { youtube: "https://www.youtube.com/@SiddhiVinayakFilmsBhakti" },
-    payments: [
-      { id: "p3", type: "YouTube", month: "Aug 2025", amount: 26000, status: "Paid" },
-    ],
-    files: { raw: [], psd: ["svf_thumb.psd"], edited: [], final: ["svf_bhakti_01.mp4"] },
-    releases: [{ id: "r2", title: "Shiv Stuti", date: "2025-08-05" }],
-  },
-];
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="RS Films - Song & Film Production House">
+  <meta name="author" content="RS Films">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <title>RS Films - Song & Film Production House</title>
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/fontawesome.css">
+  <link rel="stylesheet" href="assets/css/templatemo-space-dynamic.css">
+  <link rel="stylesheet" href="assets/css/animated.css">
+  <link rel="stylesheet" href="assets/css/owl.css">
+</head>
 
-const CLIENT_CHANNELS = [
-  { name: "Gudiya Jhaki Official", url: "https://www.youtube.com/@gudiyajhakiofficial" },
-  { name: "Shivam Chhaliya Official", url: "https://www.youtube.com/@shivamchhaliyaofficial" },
-  { name: "RS Films Bhojpuri", url: "https://www.youtube.com/@RSFilmsBhojpuri" },
-  { name: "Ishu Tilakdhari Kanpur", url: "https://www.youtube.com/c/IshuTilakdhariKanpur" },
-  { name: "Siddhi Vinayak Films Bhakti", url: "https://www.youtube.com/@SiddhiVinayakFilmsBhakti" },
-];
-
-const RELEASES = [
-  { id: "REL1", title: "Radha Pallu Se", artist: "RS Films", date: "2025-08-12", cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=800&auto=format&fit=crop" },
-  { id: "REL2", title: "Shiv Stuti", artist: "SVF Bhakti", date: "2025-08-05", cover: "https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?q=80&w=800&auto=format&fit=crop" },
-  { id: "REL3", title: "DJ Nights", artist: "DJ Aarav", date: "2025-07-28", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop" },
-];
-
-const ARTISTS = [
-  { id: "a1", name: "Aarav DJ", tags: ["DJ", "EDM"], rating: 4.8, price: 22000 },
-  { id: "a2", name: "Priya Sinha", tags: ["Singer", "Bollywood"], rating: 4.6, price: 28000 },
-  { id: "a3", name: "MC Rohan", tags: ["Anchor"], rating: 4.7, price: 18000 },
-];
-
-const STORE_ITEMS = [
-  { id: "s1", name: "YouTube Thumbnail Pack (20 PSD)", type: "PSD", price: 799, desc: "Bold Bhojpuri style thumbs" },
-  { id: "s2", name: "Song Poster Template", type: "PSD", price: 499, desc: "Festival release artwork" },
-  { id: "s3", name: "Reel Preset Bundle", type: "Preset", price: 299, desc: "LUTs + captions" },
-];
-
-// ------------------ UI Helpers ------------------
-const Chip = ({ children }) => (
-  <span className="px-2 py-1 rounded-full text-xs border">{children}</span>
-);
-
-const Section = ({ title, icon, children, right }) => (
-  <section className="space-y-3">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 text-lg font-semibold">
-        {icon}
-        <span>{title}</span>
-      </div>
-      {right}
-    </div>
-    {children}
-  </section>
-);
-
-// ------------------ Pages ------------------
-const HomePage = ({ go }) => (
-  <div className="max-w-7xl mx-auto px-4 py-10 space-y-10">
-    {/* Hero */}
-    <div className="grid lg:grid-cols-2 gap-8 items-center">
-      <div>
-        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
-          One‑Step Solution for All Digital Work
-        </h1>
-        <p className="mt-4 text-neutral-600 dark:text-neutral-300">
-          Posters, Thumbnails, Video Shoot, Editing, YouTube/OTT Management, <b>Song Distribution</b>, Artist Booking, Marketplace – sab kuch ek jagah.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button onClick={() => go("/services")} className="px-4 py-2 rounded-xl border flex items-center gap-2">
-            Explore Services <ArrowRight className="w-4 h-4" />
-          </button>
-          <button onClick={() => go("/distribution")} className="px-4 py-2 rounded-xl border">Distribute a Song</button>
-          <button onClick={() => go("/market")} className="px-4 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black">Buy PSD/Editing</button>
-        </div>
-        <div className="mt-6 flex flex-wrap gap-2 text-sm">
-          <Chip>Posters</Chip>
-          <Chip>Thumbnails</Chip>
-          <Chip>Video Shoot</Chip>
-          <Chip>Editing</Chip>
-          <Chip>YouTube / OTT</Chip>
-          <Chip>Song Distribution</Chip>
-          <Chip>Artist Booking</Chip>
-        </div>
-      </div>
-      <div className="rounded-3xl border border-neutral-200 dark:border-neutral-800 p-6">
-        <img className="rounded-2xl" src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1400&auto=format&fit=crop" alt="dashboard" />
-      </div>
-    </div>
-
-    {/* Quick Actions */}
-    <Section title="Quick Actions" icon={<LightningIcon />}>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          { label: "Create Poster/Thumbnail", to: "/market" },
-          { label: "Upload RAW Footage", to: "/dashboard" },
-          { label: "Distribute Song", to: "/distribution" },
-          { label: "Book an Artist", to: "/artists" },
-          { label: "Buy PSD Pack", to: "/market" },
-          { label: "Start Client Chat", to: "/dashboard" },
-        ].map((qa) => (
-          <button key={qa.label} onClick={() => go(qa.to)} className="p-4 rounded-2xl border hover:shadow text-left">
-            <div className="font-medium">{qa.label}</div>
-            <div className="text-xs opacity-70">One step, instant start</div>
-          </button>
-        ))}
-      </div>
-    </Section>
-
-    {/* Services Overview */}
-    <Section title="All Services" right={<button onClick={() => go("/services")} className="text-sm underline">View all</button>} icon={<FileText className="w-4 h-4" />}>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {[
-          { icon: <ImageIcon className="w-5 h-5" />, title: "Poster / Thumbnail Design", desc: "Custom PSD + multi‑ratio exports" },
-          { icon: <Video className="w-5 h-5" />, title: "Video Shoot", desc: "Cinematography, Drone, Lights, Crew" },
-          { icon: <PlaySquare className="w-5 h-5" />, title: "Video Editing", desc: "Color, Sound, VFX, Captions" },
-          { icon: <Music2 className="w-5 h-5" />, title: "YouTube/OTT Management", desc: "Uploads, SEO, payments tracking" },
-          { icon: <ShoppingBag className="w-5 h-5" />, title: "Marketplace (PSDs/Presets)", desc: "Instant digital downloads" },
-          { icon: <Users className="w-5 h-5" />, title: "Artist Booking", desc: "Singer/DJ/Anchors for events" },
-          { icon: <FileText className="w-5 h-5" />, title: "Song Distribution", desc: "All major platforms release" },
-          { icon: <MessageSquare className="w-5 h-5" />, title: "Social Media", desc: "Calendar, cross‑posting, reports" },
-        ].map((s) => (
-          <div key={s.title} className="rounded-2xl border p-5 hover:shadow">
-            <div className="flex items-center gap-2 font-semibold">{s.icon}{s.title}</div>
-            <p className="text-sm mt-2 opacity-80">{s.desc}</p>
-            <div className="mt-4 flex gap-2">
-              <button className="px-3 py-2 text-sm rounded-xl border">Know More</button>
-              <button onClick={()=> s.title==='Song Distribution'? go('/distribution') : go('/services')} className="px-3 py-2 text-sm rounded-xl bg-black text-white dark:bg-white dark:text-black">Book</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Section>
-
-    {/* Client Channels */}
-    <Section title="Clients – YouTube Channels" right={<span className="text-sm opacity-70">{CLIENT_CHANNELS.length} channels</span>} icon={<PlaySquare className="w-4 h-4" />}>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {CLIENT_CHANNELS.map((ch) => (
-          <a key={ch.url} href={ch.url} target="_blank" rel="noreferrer" className="p-4 rounded-2xl border hover:shadow group">
-            <div className="font-medium truncate" title={ch.name}>{ch.name}</div>
-            <div className="text-xs opacity-70 truncate">{ch.url}</div>
-            <div className="mt-2 text-sm underline opacity-80 group-hover:opacity-100">Open Channel</div>
-          </a>
-        ))}
-      </div>
-    </Section>
-
-    {/* Marketplace Highlights */}
-    <Section title="Featured – PSDs & Editing" right={<button onClick={() => go("/market")} className="text-sm underline">Visit Marketplace</button>} icon={<ShoppingBag className="w-4 h-4" />}>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {STORE_ITEMS.map((it) => (
-          <div key={it.id} className="rounded-2xl border p-5">
-            <div className="flex items-center justify-between">
-              <div className="font-semibold">{it.name}</div>
-              <Chip>{it.type}</Chip>
-            </div>
-            <div className="text-sm opacity-80 mt-1">{it.desc}</div>
-            <div className="mt-4 flex items-center justify-between">
-              <div className="font-bold">₹{it.price}</div>
-              <button onClick={() => go('/market')} className="px-3 py-2 text-sm rounded-xl bg-black text-white dark:bg-white dark:text-black flex items-center gap-2">
-                <ShoppingBag className="w-4 h-4" /> Buy
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Section>
-
-    {/* Latest Releases Slider */}
-    <Section title="Latest Releases" right={<button onClick={() => go('/distribution')} className="text-sm underline">Distribute Now</button>} icon={<Music2 className="w-4 h-4" />}>
-      <div className="flex gap-4 overflow-x-auto pb-2">
-        {RELEASES.map((r)=> (
-          <div key={r.id} className="min-w-[240px] max-w-[240px] rounded-2xl border overflow-hidden">
-            <img src={r.cover} alt={r.title} className="h-36 w-full object-cover"/>
-            <div className="p-3">
-              <div className="font-medium truncate" title={r.title}>{r.title}</div>
-              <div className="text-xs opacity-70">{r.artist} · {new Date(r.date).toDateString()}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Section>
-
-    {/* Quick Stats */}
-    <div className="grid md:grid-cols-3 gap-5">
-      <div className="p-5 rounded-2xl border">
-        <div className="text-sm opacity-70">Active Clients</div>
-        <div className="text-3xl font-bold mt-1">{CLIENTS.length}</div>
-      </div>
-      <div className="p-5 rounded-2xl border">
-        <div className="text-sm opacity-70">Available PSD/Services</div>
-        <div className="text-3xl font-bold mt-1">{STORE_ITEMS.length}</div>
-      </div>
-      <div className="p-5 rounded-2xl border">
-        <div className="text-sm opacity-70">Artists</div>
-        <div className="text-3xl font-bold mt-1">{ARTISTS.length}</div>
+<body>
+  <div id="js-preloader" class="js-preloader">
+    <div class="preloader-inner">
+      <span class="dot"></span>
+      <div class="dots">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
     </div>
   </div>
-);
 
-const ServicesPage = ({ go }) => (
-  <div className="max-w-7xl mx-auto px-4 py-10 space-y-6">
-    <h2 className="text-2xl font-bold">Services</h2>
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-      {[
-        { icon: <ImageIcon className="w-5 h-5" />, title: "Poster / Thumbnail Design", desc: "Custom PSD + export for all ratios." },
-        { icon: <Video className="w-5 h-5" />, title: "Video Shoot", desc: "Cinematography, Drone, Lights, Crew." },
-        { icon: <PlaySquare className="w-5 h-5" />, title: "Video Editing", desc: "Color, Sound, VFX, Captions." },
-        { icon: <Music2 className="w-5 h-5" />, title: "YouTube/OTT Management", desc: "Uploads, SEO, payments tracking." },
-        { icon: <FileText className="w-5 h-5" />, title: "Song Distribution", desc: "Release to Spotify/Apple/JioSaavn etc." },
-        { icon: <Users className="w-5 h-5" />, title: "Artist Booking", desc: "Singer/DJ/Anchors for events." },
-        { icon: <MessageSquare className="w-5 h-5" />, title: "Social Media", desc: "Content calendar & cross‑posting." },
-      ].map((s) => (
-        <div key={s.title} className="rounded-2xl border p-5 hover:shadow">
-          <div className="flex items-center gap-2 font-semibold">{s.icon}{s.title}</div>
-          <p className="text-sm mt-2 opacity-80">{s.desc}</p>
-          <div className="mt-4 flex gap-2">
-            <button className="px-3 py-2 text-sm rounded-xl border">Know More</button>
-            <button onClick={()=> s.title==='Song Distribution'? go('/distribution') : go('/market')} className="px-3 py-2 text-sm rounded-xl bg-black text-white dark:bg-white dark:text-black">Start</button>
-          </div>
+  <header class="header-area header-sticky wow slideInDown" data-wow-duration="0.75s" data-wow-delay="0s">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <nav class="main-nav">
+            <a href="index.html" class="logo">
+              <h4>R.S <span>Films</span></h4>
+            </a>
+            <ul class="nav">
+              <li class="scroll-to-section"><a href="#top" class="active">Home</a></li>
+              <li class="scroll-to-section"><a href="#about">About Us</a></li>
+              <li class="scroll-to-section"><a href="#services">Services</a></li>
+              <li class="scroll-to-section"><a href="#portfolio">Portfolio</a></li>
+              <li class="scroll-to-section"><a href="#contact">Contact</a></li>
+              <li class="scroll-to-section"><div class="main-red-button"><a href="#contact">Get in Touch</a></div></li>
+            </ul>
+            <a class='menu-trigger'>
+              <span>Menu</span>
+            </a>
+          </nav>
         </div>
-      ))}
+      </div>
     </div>
-  </div>
-);
+  </header>
 
-const DistributionPage = () => {
-  const [submitted, setSubmitted] = useState(false);
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
-      <h2 className="text-2xl font-bold">Song Distribution</h2>
-      {!submitted ? (
-        <div className="rounded-2xl border p-6 space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <FormField label="Track Title" placeholder="Song name" />
-            <FormField label="Primary Artist" placeholder="Artist name" />
-            <FormField label="Language" placeholder="Hindi / Bhojpuri" />
-            <FormField label="Label / Publisher" placeholder="Your label" />
-            <FormField label="ISRC" placeholder="Auto‑generate later" />
-            <FormField label="UPC" placeholder="For albums/EPs" />
-            <div>
-              <label className="text-xs opacity-70">Release Date</label>
-              <input type="date" className="w-full mt-1 px-3 py-2 rounded-xl border bg-transparent" />
-            </div>
-            <div>
-              <label className="text-xs opacity-70">Explicit</label>
-              <select className="w-full mt-1 px-3 py-2 rounded-xl border bg-transparent"><option>No</option><option>Yes</option></select>
-            </div>
-            <div className="md:col-span-2">
-              <label className="text-xs opacity-70">Platforms</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1 text-sm">
-                {['Spotify','Apple Music','YouTube Music','JioSaavn','Wynk','Gaana','Amazon Music'].map(p => (
-                  <label key={p} className="flex items-center gap-2 p-2 rounded-lg border"><input type="checkbox"/> {p}</label>
-                ))}
+  <div class="main-banner wow fadeIn" id="top" data-wow-duration="1s" data-wow-delay="0.5s">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6 align-self-center">
+              <div class="left-content header-text wow fadeInLeft" data-wow-duration="1s" data-wow-delay="1s">
+                <h6>Welcome to R.S Films</h6>
+                <h2>We Create <em>Music Videos</em>, <span>Posters</span> &amp; Digital Brands</h2>
+                <p>R.S Films is a one-stop solution for all your film production needs — from song shooting and video editing to channel management and Instagram promotions. Let's turn your idea into a visual story!</p>
               </div>
             </div>
-            <div className="md:col-span-2 grid md:grid-cols-2 gap-4">
-              <UploadField label="Cover Art (3000x3000)" />
-              <UploadField label="Audio File (WAV/FLAC)" />
-            </div>
-            <div className="md:col-span-2">
-              <label className="text-xs opacity-70">Rights Declaration</label>
-              <textarea rows={3} className="w-full mt-1 px-3 py-2 rounded-xl border bg-transparent" placeholder="I own/hold rights to the content..."></textarea>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <button onClick={()=>setSubmitted(true)} className="px-4 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black">Submit</button>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-2xl border p-6">
-          <div className="text-lg font-semibold mb-2">Submission Received</div>
-          <div className="text-sm opacity-80">Thank you! Hum aapse assets verify karke release process start karenge. Aap dashboard me status track kar sakte hain.</div>
-          <div className="mt-4">
-            <button onClick={()=> (window.location.hash = '/dashboard')} className="px-4 py-2 rounded-xl border">Go to Dashboard</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const MarketplacePage = ({ onAdd }) => (
-  <div className="max-w-7xl mx-auto px-4 py-10 space-y-6">
-    <div className="flex items-center justify-between">
-      <h2 className="text-2xl font-bold">Marketplace</h2>
-      <div className="flex items-center gap-2 text-sm"><Search className="w-4 h-4" /><input placeholder="Search" className="bg-transparent outline-none"/></div>
-    </div>
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {STORE_ITEMS.map((it) => (
-        <div key={it.id} className="rounded-2xl border p-5">
-          <div className="flex items-center justify-between">
-            <div className="font-semibold">{it.name}</div>
-            <Chip>{it.type}</Chip>
-          </div>
-          <div className="text-sm opacity-80 mt-1">{it.desc}</div>
-          <div className="mt-4 flex items-center justify-between">
-            <div className="font-bold">₹{it.price}</div>
-            <button onClick={() => onAdd(it)} className="px-3 py-2 text-sm rounded-xl bg-black text-white dark:bg-white dark:text-black flex items-center gap-2"><Plus className="w-4 h-4"/> Add</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const ArtistsPage = ({ onBook }) => (
-  <div className="max-w-7xl mx-auto px-4 py-10 space-y-6">
-    <h2 className="text-2xl font-bold">Artists</h2>
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {ARTISTS.map((a) => (
-        <div key={a.id} className="rounded-2xl border p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-semibold">{a.name}</div>
-              <div className="text-xs opacity-70">{a.tags.join(', ')}</div>
-            </div>
-            <div className="flex items-center gap-1 text-yellow-500"><Star className="w-4 h-4" /> {a.rating}</div>
-          </div>
-          <div className="mt-4 flex items-center justify-between">
-            <div className="font-bold">₹{a.price} / event</div>
-            <button onClick={() => onBook(a)} className="px-3 py-2 text-sm rounded-xl bg-black text-white dark:bg-white dark:text-black">Book</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const ClientDashboard = ({ client = CLIENTS[0] }) => (
-  <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
-    <div className="flex items-center justify-between">
-      <div>
-        <div className="text-sm opacity-70">Welcome back</div>
-        <h2 className="text-2xl font-bold">{client.name} – Client Dashboard</h2>
-      </div>
-      <button className="px-3 py-2 text-sm rounded-xl border flex items-center gap-2"><Upload className="w-4 h-4"/> Upload Files</button>
-    </div>
-
-    <div className="grid lg:grid-cols-3 gap-6">
-      <Section title="Projects" icon={<FileText className="w-4 h-4" />}>
-        <div className="text-3xl font-bold">{client.projects}</div>
-        <div className="text-xs opacity-70">Active</div>
-      </Section>
-
-      <Section title="Payments" icon={<ShoppingBag className="w-4 h-4" />} right={<button className="text-xs underline">View all</button>}>
-        <div className="space-y-2">
-          {client.payments.map((p) => (
-            <div key={p.id} className="flex items-center justify-between rounded-xl border p-3">
-              <div className="text-sm">{p.type} – {p.month}</div>
-              <div className="text-sm font-semibold">₹{p.amount} <span className="text-xs ml-1 opacity-70">{p.status}</span></div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Social / Channels" icon={<PlaySquare className="w-4 h-4" />}>
-        <a href={client.socials.youtube} target="_blank" rel="noreferrer" className="text-sm underline">YouTube</a>
-        <div className="mt-2 text-xs opacity-70">Managed Channels</div>
-        <div className="mt-2 grid sm:grid-cols-2 gap-2">
-          {CLIENT_CHANNELS.map((ch)=> (
-            <a key={ch.url} href={ch.url} target="_blank" rel="noreferrer" className="text-xs p-2 border rounded-lg truncate hover:shadow" title={ch.name}>{ch.name}</a>
-          ))}
-        </div>
-      </Section>
-    </div>
-
-    <Section title="Files" icon={<Upload className="w-4 h-4" />}>
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-        {[
-          { k: "raw", label: "RAW", list: client.files.raw },
-          { k: "psd", label: "PSD", list: client.files.psd },
-          { k: "edited", label: "Edited", list: client.files.edited },
-          { k: "final", label: "Final", list: client.files.final },
-        ].map((b) => (
-          <div key={b.k} className="rounded-2xl border p-4">
-            <div className="font-medium mb-2">{b.label}</div>
-            {b.list.length ? (
-              <ul className="space-y-1">
-                {b.list.map((f) => (
-                  <li key={f} className="flex items-center justify-between">
-                    <span className="truncate" title={f}>{f}</span>
-                    <button className="text-xs underline">Download</button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="text-xs opacity-70">No files</div>
-            )}
-          </div>
-        ))}
-      </div>
-    </Section>
-
-    <Section title="Releases & Social" icon={<Calendar className="w-4 h-4" />}>
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="rounded-2xl border p-4">
-          <div className="font-medium mb-2">Recent Releases</div>
-          <ul className="text-sm space-y-1">
-            {client.releases.map((r) => (
-              <li key={r.id} className="flex items-center justify-between"><span>{r.title}</span><span className="text-xs opacity-70">{r.date}</span></li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-2xl border p-4">
-          <div className="font-medium mb-2">Social Posts</div>
-          <div className="text-xs opacity-70">Scheduler coming soon</div>
-        </div>
-      </div>
-    </Section>
-  </div>
-);
-
-const AdminDashboard = () => (
-  <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
-    <h2 className="text-2xl font-bold mb-2">Admin – Control Center</h2>
-    <div className="grid lg:grid-cols-3 gap-6">
-      <Section title="Clients" icon={<Users className="w-4 h-4" />}>
-        <ul className="text-sm space-y-2">
-          {CLIENTS.map((c) => (
-            <li key={c.id} className="flex items-center justify-between p-3 rounded-xl border">
-              <span>{c.name}</span>
-              <button className="text-xs underline">Open</button>
-            </li>
-          ))}
-        </ul>
-      </Section>
-      <Section title="Orders & Files" icon={<ShoppingBag className="w-4 h-4" />}>
-        <div className="text-xs opacity-70">Connect to DB + Storage (S3/Drive) next</div>
-      </Section>
-      <Section title="Reports" icon={<FileText className="w-4 h-4" />}>
-        <div className="text-xs opacity-70">Revenue, channel analytics, payouts</div>
-      </Section>
-    </div>
-  </div>
-);
-
-const LoginPage = ({ onLogin }) => (
-  <div className="max-w-md mx-auto px-4 py-16">
-    <div className="rounded-2xl border p-6 space-y-4">
-      <h2 className="text-xl font-bold">Login</h2>
-      <div className="grid grid-cols-2 gap-2">
-        <button onClick={() => onLogin({ role: "client" })} className="px-3 py-2 rounded-xl border">Demo Client</button>
-        <button onClick={() => onLogin({ role: "admin" })} className="px-3 py-2 rounded-xl border">Demo Admin</button>
-      </div>
-      <div className="text-xs opacity-70">Real auth (JWT) integrate next.</div>
-    </div>
-  </div>
-);
-
-// ------------------ Layout & Nav ------------------
-const LightningIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M11 21h-1l1-7H7l6-11h1l-1 7h4l-6 11z"></path></svg>
-);
-
-const FormField = ({ label, placeholder }) => (
-  <div>
-    <label className="text-xs opacity-70">{label}</label>
-    <input className="w-full mt-1 px-3 py-2 rounded-xl border bg-transparent" placeholder={placeholder} />
-  </div>
-);
-
-const UploadField = ({ label }) => (
-  <div>
-    <label className="text-xs opacity-70">{label}</label>
-    <input type="file" className="w-full mt-1 px-3 py-2 rounded-xl border bg-transparent" />
-  </div>
-);
-
-const Nav = ({ go, user, onLogout }) => {
-  const [open, setOpen] = useState(false);
-  const Link = ({ to, icon, label }) => (
-    <button
-      onClick={() => {
-        setOpen(false);
-        go(to);
-      }}
-      className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-neutral-100/80 dark:hover:bg-neutral-800/60"
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-  return (
-    <header className="sticky top-0 z-40 border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/70 backdrop-blur">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-violet-500 to-fuchsia-500" />
-          <div className="font-semibold tracking-tight">Digital Line Portal</div>
-        </div>
-        <nav className="hidden md:flex items-center gap-1 text-sm">
-          <Link to="/" icon={<Home className="w-4 h-4" />} label="Home" />
-          <Link to="/services" icon={<FileText className="w-4 h-4" />} label="Services" />
-          <Link to="/distribution" icon={<Music2 className="w-4 h-4" />} label="Distribution" />
-          <Link to="/market" icon={<ShoppingBag className="w-4 h-4" />} label="Marketplace" />
-          <Link to="/artists" icon={<Users className="w-4 h-4" />} label="Artists" />
-          {user?.role === "client" && (
-            <Link to="/dashboard" icon={<Shield className="w-4 h-4" />} label="Client" />
-          )}
-          {user?.role === "admin" && (
-            <Link to="/admin" icon={<Shield className="w-4 h-4" />} label="Admin" />
-          )}
-        </nav>
-        <div className="hidden md:flex items-center gap-2">
-          {!user ? (
-            <button onClick={() => (window.location.hash = "/login")} className="px-3 py-2 text-sm rounded-xl border hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2">
-              <LogIn className="w-4 h-4" /> Login
-            </button>
-          ) : (
-            <button onClick={onLogout} className="px-3 py-2 text-sm rounded-xl border hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2">
-              <LogOut className="w-4 h-4" /> Logout
-            </button>
-          )}
-        </div>
-        <button className="md:hidden" onClick={() => setOpen((v) => !v)}>
-          {open ? <X /> : <Menu />}
-        </button>
-      </div>
-      {open && (
-        <div className="md:hidden px-4 pb-3 space-y-1">
-          <button onClick={() => setOpen(false)} className="w-full hidden" />
-          <div className="rounded-2xl border p-2">
-            <div className="grid">
-              <button onClick={() => (window.location.hash = "/")} className="px-3 py-2 text-left">Home</button>
-              <button onClick={() => (window.location.hash = "/services")} className="px-3 py-2 text-left">Services</button>
-              <button onClick={() => (window.location.hash = "/distribution")} className="px-3 py-2 text-left">Distribution</button>
-              <button onClick={() => (window.location.hash = "/market")} className="px-3 py-2 text-left">Marketplace</button>
-              <button onClick={() => (window.location.hash = "/artists")} className="px-3 py-2 text-left">Artists</button>
-              {user?.role === "client" && (
-                <button onClick={() => (window.location.hash = "/dashboard")} className="px-3 py-2 text-left">Client</button>
-              )}
-              {user?.role === "admin" && (
-                <button onClick={() => (window.location.hash = "/admin")} className="px-3 py-2 text-left">Admin</button>
-              )}
-              <button onClick={() => (window.location.hash = "/login")} className="px-3 py-2 text-left">Login</button>
+            <div class="col-lg-6">
+              <div class="right-image wow fadeInRight" data-wow-duration="1s" data-wow-delay="0.5s">
+                <img src="assets/images/banner-right-image.png" alt="production setup">
+              </div>
             </div>
           </div>
         </div>
-      )}
-    </header>
-  );
-};
+      </div>
+    </div>
+  </div>
 
-// ------------------ Root App ------------------
-export default function App() {
-  const [route, setRoute] = useState(window.location.hash.replace("#", "") || "/");
-  const [user, setUser] = useState(null);
-  const [cart, setCart] = useState([]);
-  const [booking, setBooking] = useState(null);
+  <!-- Replace all About and Services with RS Films content in next step -->
+  <!-- You can continue editing or ask me to inject full description in sections: About, Services, Portfolio etc. -->
 
-  const go = (to) => {
-    window.location.hash = to;
-    setRoute(to);
-  };
-  React.useEffect(() => {
-    const onHash = () => setRoute(window.location.hash.replace("#", "") || "/");
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
+  <!-- Scripts -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/owl-carousel.js"></script>
+  <script src="assets/js/animation.js"></script>
+  <script src="assets/js/imagesloaded.js"></script>
+  <script src="assets/js/templatemo-custom.js"></script>
 
-  const addToCart = (item) => setCart((c) => [...c, item]);
-  const removeFromCart = (id) => setCart((c) => c.filter((i) => i.id !== id));
+</body>
+</html>
 
-  return (
-    <div className="min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
-      <Nav go={go} user={user} onLogout={() => setUser(null)} />
-
-      {route === "/" && <HomePage go={go} />}
-      {route === "/services" && <ServicesPage go={go} />}
-      {route === "/market" && <MarketplacePage onAdd={addToCart} />}
-      {route === "/artists" && <ArtistsPage onBook={(a)=>setBooking(a)} />}
-      {route === "/distribution" && <DistributionPage />}
-      {route === "/dashboard" && <ClientDashboard />}
-      {route === "/admin" && <AdminDashboard />}
-      {route === "/login" && <LoginPage onLogin={(u)=>{ setUser(u); go(u.role==='admin'? '/admin' : '/dashboard')}} />}
-
-      {/* Cart Drawer */}
-      {!!cart.length && (
-        <div className="fixed bottom-6 right-6 w-full max-w-sm rounded-2xl border bg-white/90 dark:bg-neutral-900/90 backdrop-blur shadow-xl">
-          <div className="p-4 flex items-center justify-between">
-            <div className="font-semibold">Cart ({cart.length})</div>
-            <button onClick={()=>setCart([])} className="text-xs underline">Clear</button>
+  <div id="about" class="about-us section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="left-image wow fadeIn" data-wow-duration="1s" data-wow-delay="0.2s">
+            <img src="assets/images/about-left-image.png" alt="person graphic">
           </div>
-          <div className="max-h-56 overflow-auto divide-y">
-            {cart.map((it)=> (
-              <div key={it.id} className="p-3 text-sm flex items-center justify-between">
-                <span className="truncate" title={it.name}>{it.name}</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">₹{it.price}</span>
-                  <button onClick={()=>removeFromCart(it.id)} className="p-1 rounded-lg border"><Trash2 className="w-4 h-4"/></button>
+        </div>
+        <div class="col-lg-8 align-self-center">
+          <div class="services">
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="item wow fadeIn" data-wow-duration="1s" data-wow-delay="0.5s">
+                  <div class="icon">
+                    <img src="assets/images/service-icon-01.png" alt="reporting">
+                  </div>
+                  <div class="right-text">
+                    <h4>Song Shooting (Video Production)</h4>
+                    <p>We conceptualize, shoot, and direct professional-quality music videos. From romantic tracks to devotional songs, item songs to emotional ballads — we handle:
+Script Writing & Storyboarding,
+Location Scouting,
+Cinematic Camera Setup (DSLRs, drones, gimbals),
+Professional Lighting & Crew,
+Direction and On-Set Management</p>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="p-4 flex items-center justify-between">
-            <div className="text-sm opacity-70">Total</div>
-            <div className="font-bold">₹{cart.reduce((a,b)=>a+b.price,0)}</div>
-          </div>
-          <div className="px-4 pb-4">
-            <button className="w-full px-4 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black">Checkout (Demo)</button>
+              <div class="col-lg-6">
+                <div class="item wow fadeIn" data-wow-duration="1s" data-wow-delay="0.7s">
+                  <div class="icon">
+                    <img src="assets/images/service-icon-02.png" alt="">
+                  </div>
+                  <div class="right-text">
+                    <h4>Video Editing & Post-Production</h4>
+                    <p>We turn raw footage into polished masterpieces with:
+High-quality Video Editing (Color Grading, Transitions, Cuts),
+VFX & Green Screen Integration,
+Lyrics On-Screen Synchronization,
+Reels & Shorts Creation,
+Audio Synchronization & Mastering</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="item wow fadeIn" data-wow-duration="1s" data-wow-delay="0.9s">
+                  <div class="icon">
+                    <img src="assets/images/service-icon-03.png" alt="">
+                  </div>
+                  <div class="right-text">
+                    <h4>Poster Designing & Thumbnail Creation</h4>
+                    <p>Your song or project needs strong visuals — we deliver:
+HD Song Posters (Social Media Optimized),
+Movie & Event Posters,
+Eye-catching YouTube Thumbnails,
+Motion Posters,
+Devotional & Festival Creatives</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="item wow fadeIn" data-wow-duration="1s" data-wow-delay="1.1s">
+                  <div class="icon">
+                    <img src="assets/images/service-icon-04.png" alt="">
+                  </div>
+                  <div class="right-text">
+                    <h4>YouTube Channel Management</h4>
+                    <p>We manage YouTube channels for artists & labels professionally:
+Daily/Weekly Upload Planning,
+Video SEO (Titles, Descriptions, Tags),
+Thumbnail Design,
+Channel Branding (Logo, Banner, Watermark),
+Community Post Management,
+Monetization Support & Strategy
+
+</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
-
-      {/* Booking Modal */}
-      {booking && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl border bg-white dark:bg-neutral-900 p-6 space-y-3">
-            <div className="text-lg font-semibold">Book {booking.name}</div>
-            <div className="text-sm opacity-80">Tags: {booking.tags.join(", ")} · Rating {booking.rating}</div>
-            <div className="grid sm:grid-cols-2 gap-3 mt-2">
-              <FormField label="Event Date" placeholder="DD/MM/YYYY" />
-              <FormField label="City" placeholder="Your city" />
-            </div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <FormField label="Contact Name" placeholder="Full name" />
-              <FormField label="Phone" placeholder="98xxxxxx" />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={()=>setBooking(null)} className="px-3 py-2 rounded-xl border">Cancel</button>
-              <button onClick={()=>setBooking(null)} className="px-3 py-2 rounded-xl bg-black text-white dark:bg-white dark:text-black">Send Request</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <footer className="mt-16 border-t border-neutral-200 dark:border-neutral-800">
-        <div className="max-w-7xl mx-auto px-4 py-8 text-sm opacity-70">© {new Date().getFullYear()} Digital Line — One Step Portal</div>
-      </footer>
+      </div>
     </div>
-  );
-}
+  </div>
+
+  <div id="services" class="our-services section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 align-self-center  wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s">
+          <div class="left-image">
+            <img src="assets/images/services-left-image.png" alt="">
+          </div>
+        </div>
+        <div class="col-lg-6 wow fadeInRight" data-wow-duration="1s" data-wow-delay="0.2s">
+          <div class="section-heading">
+            <h2>Boost Your <em>Digital Presence</em> with; <span>R.S Films Group</span> Ideas</h2>
+            <p>At R.S Films, we offer professional services in song shooting, video editing, poster designing, YouTube channel management, and Instagram promotions. Take your brand to the next level with our creative and result-driven media solutions.</p>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="first-bar progress-skill-bar">
+                <h4>Channel Growth Efficiency</h4>
+                <span>96%</span>
+                <div class="filled-bar"></div>
+                <div class="full-bar"></div>
+              </div>
+            </div>
+            <div class="col-lg-12">
+              <div class="second-bar progress-skill-bar">
+                <h4>Client Satisfaction</h4>
+                <span>98%</span>
+                <div class="filled-bar"></div>
+                <div class="full-bar"></div>
+              </div>
+            </div>
+            <div class="col-lg-12">
+              <div class="third-bar progress-skill-bar">
+                <h4>Project Delivery Rate</h4>
+                <span>99%</span>
+                <div class="filled-bar"></div>
+                <div class="full-bar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="portfolio" class="our-portfolio section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 offset-lg-3">
+          <div class="section-heading  wow bounceIn" data-wow-duration="1s" data-wow-delay="0.2s">
+            <h2 class="section-heading">Explore What <em>R.S Films</em> Offers &amp; How We <span>Deliver Excellence</span></h2>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-3 col-sm-6">
+          <a href="#">
+            <div class="item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.3s">
+              <div class="hidden-content">
+                <h4>Music Video Shooting</h4>
+                <p>Cinematic song shoots with professional direction.</p>
+              </div>
+              <div class="showed-content">
+                <img src="assets/images/portfolio-image.png" alt="">
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <a href="#">
+            <div class="item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.4s">
+              <div class="hidden-content">
+                <h4>Video Editing & VFX</h4>
+                <p>tunning edits with effects, color grading & 4K export.</p>
+              </div>
+              <div class="showed-content">
+                <img src="assets/images/portfolio-image.png" alt="">
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <a href="#">
+            <div class="item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.5s">
+              <div class="hidden-content">
+                <h4>Poster Designing</h4>
+                <p>Eye-catching posters & thumbnails for digital platforms.</p>
+              </div>
+              <div class="showed-content">
+                <img src="assets/images/portfolio-image.png" alt="">
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <a href="#">
+            <div class="item wow bounceInUp" data-wow-duration="1s" data-wow-delay="0.6s">
+              <div class="hidden-content">
+                <h4>YouTube/Instagram Management</h4>
+                <p>Complete channel & social media growth handling.</p>
+              </div>
+              <div class="showed-content">
+                <img src="assets/images/portfolio-image.png" alt="">
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="blog" class="our-blog section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 wow fadeInDown" data-wow-duration="1s" data-wow-delay="0.25s">
+          <div class="section-heading">
+            <h2>Discover Our <em>Latest Creative Projects</em> & <span>Updates</span></h2>
+          </div>
+        </div>
+        <!-- Latest Work Section -->
+<section id="latest-work" style="padding: 40px 20px; background: #f9f9f9;">
+  <div style="max-width: 1000px; margin: auto; text-align: center;">
+    <h2 style="font-family: 'Poppins', sans-serif; font-weight: 600; color: #222; margin-bottom: 30px;">Latest Work</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 20px;">
+      
+      <!-- Video 1 -->
+      <div style="box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+        <iframe 
+          width="100%" height="180" 
+          src="https://www.youtube.com/embed/boBSnltFuVQ" 
+          title="YouTube video player" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen></iframe>
+      </div>
+
+      <!-- Video 2 -->
+      <div style="box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+        <iframe 
+          width="100%" height="180" 
+          src="https://www.youtube.com/embed/xyQtYFIRBZg" 
+          title="YouTube video player" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen></iframe>
+      </div>
+
+      <!-- Video 3 -->
+      <div style="box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+        <iframe 
+          width="100%" height="180" 
+          src="https://www.youtube.com/embed/FyE22qWVx0Y" 
+          title="YouTube video player" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen></iframe>
+      </div>
+
+      <!-- Video 4 -->
+      <div style="box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;">
+        <iframe 
+          width="100%" height="180" 
+          src="https://www.youtube.com/embed/h6sZ-QmZfXo" 
+          title="YouTube video player" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen></iframe>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+        <div class="col-lg-6 wow fadeInDown" data-wow-duration="1s" data-wow-delay="0.25s">
+          <div class="top-dec">
+            <img src="assets/images/blog-dec.png" alt="">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6 wow fadeInUp" data-wow-duration="1s" data-wow-delay="0.25s">
+          <div class="left-image">
+            <a href="#"><img src="assets/images/big-blog-thumb.jpg" alt="Workspace Desktop"></a>
+            <div class="info">
+              <div class="inner-content">
+                <ul>
+                  <li><i class="fa fa-calendar"></i> 24 Mar 2021</li>
+                  <li><i class="fa fa-users"></i> TemplateMo</li>
+                  <li><i class="fa fa-folder"></i> Branding</li>
+                </ul>
+                <a href="#"><h4>SEO Agency &amp; Digital Marketing</h4></a>
+                <p>Lorem ipsum dolor sit amet, consectetur and sed doer ket eismod tempor incididunt ut labore et dolore magna...</p>
+                <div class="main-blue-button">
+                  <a href="#">Discover More</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 wow fadeInUp" data-wow-duration="1s" data-wow-delay="0.25s">
+          <div class="right-list">
+            <ul>
+              <li>
+                <div class="left-content align-self-center">
+                  <span><i class="fa fa-calendar"></i> 18 Mar 2021</span>
+                  <a href="#"><h4>New Websites &amp; Backlinks</h4></a>
+                  <p>Lorem ipsum dolor sit amsecteturii and sed doer ket eismod...</p>
+                </div>
+                <div class="right-image">
+                  <a href="#"><img src="assets/images/blog-thumb-01.jpg" alt=""></a>
+                </div>
+              </li>
+              <li>
+                <div class="left-content align-self-center">
+                  <span><i class="fa fa-calendar"></i> 14 Mar 2021</span>
+                  <a href="#"><h4>SEO Analysis &amp; Content Ideas</h4></a>
+                  <p>Lorem ipsum dolor sit amsecteturii and sed doer ket eismod...</p>
+                </div>
+                <div class="right-image">
+                  <a href="#"><img src="assets/images/blog-thumb-01.jpg" alt=""></a>
+                </div>
+              </li>
+              <li>
+                <div class="left-content align-self-center">
+                  <span><i class="fa fa-calendar"></i> 06 Mar 2021</span>
+                  <a href="#"><h4>SEO Tips &amp; Digital Marketing</h4></a>
+                  <p>Lorem ipsum dolor sit amsecteturii and sed doer ket eismod...</p>
+                </div>
+                <div class="right-image">
+                  <a href="#"><img src="assets/images/blog-thumb-01.jpg" alt=""></a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="contact" class="contact-us section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 align-self-center wow fadeInLeft" data-wow-duration="0.5s" data-wow-delay="0.25s">
+          <div class="section-heading">
+            <h2>Feel Free To Send Us a Message About Your Website Needs</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doer ket eismod tempor incididunt ut labore et dolores</p>
+            <div class="phone-info">
+              <h4>For any enquiry, Call Us: <span><i class="fa fa-phone"></i> <a href="#">+91 97929 46666</a></span></h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 wow fadeInRight" data-wow-duration="0.5s" data-wow-delay="0.25s">
+          <form id="contact" action="" method="post">
+            <div class="row">
+              <div class="col-lg-6">
+                <fieldset>
+                  <input type="name" name="name" id="name" placeholder="Name" autocomplete="on" required>
+                </fieldset>
+              </div>
+              <div class="col-lg-6">
+                <fieldset>
+                  <input type="surname" name="surname" id="surname" placeholder="Surname" autocomplete="on" required>
+                </fieldset>
+              </div>
+              <div class="col-lg-12">
+                <fieldset>
+                  <input type="text" name="email" id="email" pattern="[^ @]*@[^ @]*" placeholder="Your Email" required="">
+                </fieldset>
+              </div>
+              <div class="col-lg-12">
+                <fieldset>
+                  <textarea name="message" type="text" class="form-control" id="message" placeholder="Message" required=""></textarea>  
+                </fieldset>
+              </div>
+              <div class="col-lg-12">
+                <fieldset>
+                  <button type="submit" id="form-submit" class="main-button ">Send Message</button>
+                </fieldset>
+              </div>
+            </div>
+            <div class="contact-dec">
+              <img src="assets/images/contact-decoration.png" alt="">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3558.1508227090976!2d81.084989!3d26.898708099999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39995f8052298f77%3A0x29d1c4374a1db1bd!2sR.S%20FILMS%20STUDIO!5e0!3m2!1sen!2sin!4v1749203610564!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+
+<div class="row">
+
+                        <div class="col-lg-3 col-md-6 col-12 mb-3 mb-lg- mb-md-0 ms-auto">
+                            <h4 class="mb-3">Head office</h4>
+
+                            <p>Shop No 06, Satya Sai Market Papnamau Road, Anaura kalan, Chinhat, Lucknow, Uttar Pradesh 226028</p>
+
+                            <hr>
+
+                            <p class="d-flex align-items-center mb-1">
+                                <span class="me-2">Phone</span>
+
+                                <a href="tel: +91 9792946666" class="site-footer-link">
+                                    +91 9792946666
+                                </a>
+                            </p>
+
+                            <p class="d-flex align-items-center">
+                                <span class="me-2">Email</span>
+
+                                <a href="info.rsfilmsofficial@gmail.com" class="site-footer-link">
+                                    info.rsfilmsofficial@gmail.com
+                                </a>
+                            </p>
+                        </div>
+
+
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 wow fadeIn" data-wow-duration="1s" data-wow-delay="0.25s">
+          <p>© R.S Films 2025. All Rights Reserved. 
+          
+        
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- Scripts -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/owl-carousel.js"></script>
+  <script src="assets/js/animation.js"></script>
+  <script src="assets/js/imagesloaded.js"></script>
+  <script src="assets/js/templatemo-custom.js"></script>
+
+</body>
+</html>
